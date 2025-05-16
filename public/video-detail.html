@@ -4,36 +4,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chi tiết video</title>
-  <link rel="stylesheet" href="video.css">
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <title>Chi tiết video - DARK VIDEO</title>
+  <link rel="stylesheet" href="dark-theme.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1 id="video-title">Đang tải...</h1>
-      <a href="/">Quay lại trang chính</a>
+      <h1>XEM VIDEO KHÔNG KIỂM DUYỆT</h1>
+      <div>
+        <a href="/" class="back-btn">QUAY LẠI</a>
+        <a href="#" id="download-video" class="download-btn">TẢI XUỐNG</a>
+      </div>
     </header>
     
-    <div id="video-container" class="video-detail-container">
-      <div class="video-wrapper">
-        <video id="video-player" controls></video>
-      </div>
-      <div class="video-info">
-        <p id="upload-date">Ngày tải lên: <span>Đang tải...</span></p>
-        <p id="uploader">Người tải lên: <span>Đang tải...</span></p>
-      </div>
+    <div id="video-container">
+      <!-- Video player sẽ được thêm vào đây -->
+    </div>
+    
+    <div class="video-info-container">
+      <h2 id="video-title" class="horror-title">Đang tải...</h2>
     </div>
   </div>
 
-  <script src="js/firebase-config.js"></script>
   <script>
     // Hàm thử lại tải video
     function retryLoadVideo(filename) {
       console.log('Đang thử lại tải video:', filename);
       const videoPlayer = document.getElementById('video-player');
+      
+      // Lưu trữ giá trị ngày tải lên trước khi thay thế HTML
+      let uploadDateText = "Đang tải...";
+      const uploadDateElement = document.getElementById('upload-date');
+      if (uploadDateElement && uploadDateElement.querySelector('span')) {
+        uploadDateText = uploadDateElement.querySelector('span').textContent;
+      }
       
       // Thêm tham số ngẫu nhiên để tránh cache
       videoPlayer.src = `/video/${filename}?t=${new Date().getTime()}`;
@@ -41,11 +46,10 @@
       // Thay thế thông báo lỗi bằng video player
       document.getElementById('video-container').innerHTML = `
         <div class="video-wrapper">
-          <video id="video-player" controls></video>
+          <video id="video-player" controls class="horror-video"></video>
         </div>
         <div class="video-info">
-          <p id="upload-date">Ngày tải lên: <span>${document.getElementById('upload-date').querySelector('span').textContent}</span></p>
-          <p id="uploader">Người tải lên: <span>${document.getElementById('uploader').querySelector('span').textContent}</span></p>
+          <p id="upload-date">Ngày tải lên: <span>${uploadDateText}</span></p>
         </div>
       `;
       
@@ -67,29 +71,8 @@
       };
     }
     
-    // Check if user is logged in
+    // Khởi tạo trang
     document.addEventListener('DOMContentLoaded', () => {
-      const user = firebaseAuth.checkAuthState();
-      if (user) {
-        // Update UI with user info
-        const header = document.querySelector('header');
-        const userProfile = document.createElement('div');
-        userProfile.className = 'user-profile';
-        userProfile.innerHTML = `
-          <img src="${user.photoURL || 'https://via.placeholder.com/40'}" alt="${user.displayName}">
-          <div>
-            <span>${user.displayName}</span>
-            <a href="#" id="sign-out-btn" style="font-size: 0.8rem; padding: 5px 10px;">Đăng xuất</a>
-          </div>
-        `;
-        header.appendChild(userProfile);
-        
-        // Add sign out event listener
-        document.getElementById('sign-out-btn').addEventListener('click', (e) => {
-          e.preventDefault();
-          firebaseAuth.signOut();
-        });
-      }
       
       // Get video ID from URL
       const urlParams = new URLSearchParams(window.location.search);
@@ -99,6 +82,16 @@
         window.location.href = '/';
         return;
       }
+      
+      // Hiển thị giao diện video player mặc định
+      document.getElementById('video-container').innerHTML = `
+        <div class="video-wrapper">
+          <video id="video-player" controls class="horror-video"></video>
+        </div>
+        <div class="video-info">
+          <p id="upload-date">Ngày tải lên: <span>Đang tải...</span></p>
+        </div>
+      `;
       
       // Load video details - videoId là tên file của video
       console.log('Đang tải video với ID:', videoId);
@@ -170,20 +163,14 @@
             console.log('Video đã tải thành công');
           };
           
-          // Get uploader info if available
-          if (video.userId) {
-            // Hiển thị tên người tải lên nếu có, nếu không thì hiển thị 'Người dùng'
-            document.getElementById('uploader').querySelector('span').textContent = 
-              video.uploaderName || 'Người dùng';
-            
-            // Log thông tin để debug
-            console.log('Thông tin người tải lên:', {
-              userId: video.userId,
-              uploaderName: video.uploaderName
-            });
-          } else {
-            document.getElementById('uploader').querySelector('span').textContent = 'Không xác định';
-          }
+          // Thiết lập nút tải xuống
+          const downloadBtn = document.getElementById('download-video');
+          downloadBtn.href = `/video/${encodeURIComponent(video.filename)}`;
+          downloadBtn.download = video.filename;
+          downloadBtn.setAttribute('data-filename', video.filename);
+          
+          // Thêm hiệu ứng rùng rợn cho video
+          videoPlayer.classList.add('horror-effect');
         })
         .catch(error => {
           console.error('Lỗi khi tải thông tin video:', error);

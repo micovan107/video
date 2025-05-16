@@ -1,0 +1,523 @@
+/* dark-theme.css - Giao diện tối cho trang web video không kiểm duyệt */
+:root {
+  --primary-color: #ff0000; /* Đỏ máu */
+  --secondary-color: #8b0000; /* Đỏ sẫm */
+  --accent-color: #ff5500; /* Cam cháy */
+  --text-color: #ffffff; /* Trắng */
+  --light-bg: #1a1a1a; /* Xám đen */
+  --dark-bg: #000000; /* Đen */
+  --shadow: 0 4px 6px rgba(255, 0, 0, 0.3); /* Bóng đỏ */
+  --border-radius: 8px;
+  --transition: all 0.3s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #000000 0%, #1a0000 100%);
+  color: var(--text-color);
+  line-height: 1.6;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(255, 0, 0, 0.5);
+}
+
+h1 {
+  color: var(--primary-color);
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Định dạng cho tiêu đề video trên trang chi tiết */
+#video-title {
+  font-size: 1.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  color: var(--primary-color);
+}
+
+h1::before {
+  content: '🔞';
+  font-size: 2rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+a {
+  display: inline-block;
+  text-decoration: none;
+  color: white;
+  background-color: var(--primary-color);
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  font-weight: bold;
+  transition: var(--transition);
+  box-shadow: var(--shadow);
+  margin: 10px 0;
+}
+
+a:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 10px rgba(255, 0, 0, 0.5);
+}
+
+#videos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-top: 30px;
+}
+
+/* Responsive adjustments for video grid */
+@media (max-width: 1200px) {
+  #videos {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  #videos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  #videos {
+    grid-template-columns: 1fr;
+  }
+}
+
+.empty-message, .error-message {
+  grid-column: 1 / -1;
+  background-color: #1a0000;
+  border-radius: var(--border-radius);
+  padding: 40px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  margin: 30px auto;
+  max-width: 600px;
+}
+
+.empty-message h3 {
+  color: var(--primary-color);
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+}
+
+.empty-message p {
+  color: #cccccc;
+  font-size: 1.1rem;
+}
+
+.error-message {
+  color: var(--accent-color);
+  border-left: 5px solid var(--accent-color);
+}
+
+.error-message h3 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  color: var(--accent-color);
+}
+
+.error-message p {
+  margin-bottom: 10px;
+  color: #cccccc;
+}
+
+.error-message .back-btn {
+  display: inline-block;
+  margin-top: 20px;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.error-message .back-btn:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-3px);
+}
+
+/* Video grid item styles */
+.video-item {
+  background-color: #1a0000;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  padding-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+.video-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 16px rgba(255, 0, 0, 0.4);
+  border: 1px solid rgba(255, 0, 0, 0.8);
+}
+
+.video-thumbnail {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  aspect-ratio: 16/9;
+}
+
+.video-thumbnail video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: var(--transition);
+}
+
+.video-thumbnail:hover video {
+  transform: scale(1.05);
+}
+
+.video-info {
+  padding: 15px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: var(--text-color);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.video-meta {
+  display: flex;
+  justify-content: space-between;
+  color: #cccccc;
+  font-size: 0.9rem;
+  margin-top: auto;
+}
+
+.video-date {
+  color: #999;
+}
+
+/* Nút tải xuống video */
+.download-btn {
+  display: inline-block;
+  background-color: var(--secondary-color);
+  color: white;
+  padding: 8px 15px;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  transition: var(--transition);
+  text-align: center;
+}
+
+.download-btn:hover {
+  background-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+/* Trang chi tiết video - Phong cách kinh dị */
+#video-container {
+  margin-bottom: 30px;
+  background-color: #0a0000;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+  border: 1px solid rgba(255, 0, 0, 0.5);
+  position: relative;
+}
+
+#video-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M0 50 L100 50" stroke="rgba(255,0,0,0.1)" stroke-width="0.5"/><path d="M50 0 L50 100" stroke="rgba(255,0,0,0.1)" stroke-width="0.5"/></svg>');
+  pointer-events: none;
+  opacity: 0.3;
+  z-index: 1;
+}
+
+#video-player {
+  width: 100%;
+  max-height: 70vh;
+  background-color: #000;
+  filter: contrast(1.1) saturate(1.2);
+  box-shadow: inset 0 0 30px rgba(255, 0, 0, 0.3);
+}
+
+/* Hiệu ứng kinh dị cho video */
+.horror-video {
+  position: relative;
+}
+
+.horror-video::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(255,0,0,0.05), transparent, rgba(0,0,0,0.1));
+  pointer-events: none;
+  z-index: 10;
+}
+
+.horror-effect {
+  animation: horror-flicker 8s infinite;
+}
+
+@keyframes horror-flicker {
+  0%, 100% { filter: contrast(1.1) saturate(1.2); }
+  5% { filter: contrast(1.2) saturate(1.3) brightness(0.9); }
+  10% { filter: contrast(1.1) saturate(1.2); }
+  15% { filter: contrast(1.3) saturate(1.4) brightness(0.8); }
+  20% { filter: contrast(1.1) saturate(1.2); }
+  98% { filter: contrast(1.1) saturate(1.2); }
+  99% { filter: contrast(0.5) saturate(0.6) brightness(0.4); }
+}
+
+#video-info {
+  padding: 20px;
+  background-color: #1a0000;
+  border-top: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+#video-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  color: #cccccc;
+}
+
+#video-uploader {
+  font-style: italic;
+}
+
+#video-date {
+  color: #999;
+}
+
+/* Form styles */
+form {
+  background-color: #1a0000;
+  padding: 30px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  max-width: 600px;
+  margin: 0 auto;
+  border: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+form h2 {
+  color: var(--primary-color);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-color);
+  font-weight: bold;
+}
+
+input[type="text"],
+input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  border-radius: var(--border-radius);
+  background-color: #0a0000;
+  color: var(--text-color);
+}
+
+input[type="text"]:focus,
+input[type="file"]:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.2);
+}
+
+button[type="submit"] {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+  transition: var(--transition);
+}
+
+button[type="submit"]:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 10px rgba(255, 0, 0, 0.3);
+}
+
+/* Thêm hiệu ứng nhấp nháy cho tiêu đề */
+@keyframes flicker {
+  0%, 100% { opacity: 1; text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.5); }
+  5% { opacity: 0.9; text-shadow: 2px 2px 10px rgba(255, 0, 0, 0.8); }
+  10% { opacity: 1; text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.5); }
+  15% { opacity: 0.7; text-shadow: 2px 2px 15px rgba(255, 0, 0, 1); }
+  16% { opacity: 1; text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.5); }
+  50% { opacity: 0.8; text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.5); }
+  52% { opacity: 0.9; text-shadow: 2px 2px 8px rgba(255, 0, 0, 0.7); }
+  54% { opacity: 0.8; text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.5); }
+}
+
+h1 {
+  animation: flicker 4s infinite;
+}
+
+/* Hiệu ứng kinh dị cho tiêu đề video */
+.horror-title {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation: horror-title-effect 5s infinite;
+  text-shadow: 0 0 5px rgba(255, 0, 0, 0.7);
+}
+
+@keyframes horror-title-effect {
+  0%, 100% { text-shadow: 0 0 5px rgba(255, 0, 0, 0.7); }
+  50% { text-shadow: 0 0 15px rgba(255, 0, 0, 1); letter-spacing: 2px; }
+}
+
+/* Thêm hiệu ứng máu chảy cho header */
+header {
+  position: relative;
+  overflow: hidden;
+}
+
+header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+  animation: blood-drip 5s infinite;
+}
+
+@keyframes blood-drip {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Hiệu ứng máu nhỏ giọt */
+.video-info-container {
+  position: relative;
+  padding: 20px;
+  background-color: #0a0000;
+  border-radius: var(--border-radius);
+  margin-top: 20px;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+.video-info-container::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50px;
+  width: 2px;
+  height: 10px;
+  background-color: var(--primary-color);
+  animation: dripping-blood 4s infinite;
+}
+
+.video-info-container::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  right: 70px;
+  width: 2px;
+  height: 10px;
+  background-color: var(--primary-color);
+  animation: dripping-blood 6s infinite 2s;
+}
+
+@keyframes dripping-blood {
+  0% { height: 0; opacity: 0; }
+  20% { height: 10px; opacity: 1; }
+  40% { height: 10px; top: -10px; opacity: 1; }
+  50% { height: 15px; top: -15px; opacity: 1; }
+  60% { height: 0; top: 0; opacity: 0; }
+  100% { height: 0; opacity: 0; }
+}
+
+/* Hiệu ứng nền trang */
+body {
+  background: linear-gradient(135deg, #000000 0%, #1a0000 100%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="1" fill="rgba(255,0,0,0.1)"/></svg>');
+  pointer-events: none;
+  opacity: 0.3;
+  z-index: -1;
+}

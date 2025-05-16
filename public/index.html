@@ -4,25 +4,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trang Chia Sẻ Video</title>
-  <link rel="stylesheet" href="video.css">
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <title>DARK VIDEO - Trang Web Video Không Kiểm Duyệt</title>
+  <link rel="stylesheet" href="dark-theme.css">
+
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Video mới nhất</h1>
-      <a href="upload.html">Tải video lên</a>
+      <h1>VIDEO KHÔNG KIỂM DUYỆT</h1>
+      <a href="upload.html">TẢI VIDEO LÊN</a>
     </header>
     
     <div id="videos"></div>
   </div>
 
-  <script src="js/firebase-config.js"></script>
   <script src="js/video-manager.js"></script>
-</body>
-</html>
+  
+  <script>
+    // Thêm chức năng tải xuống video
+    function addDownloadButtons() {
+      setTimeout(() => {
+        const videoItems = document.querySelectorAll('.video-item');
+        videoItems.forEach(item => {
+          const videoInfo = item.querySelector('.video-info');
+          const videoFilename = item.getAttribute('data-filename');
+          
+          // Kiểm tra nếu chưa có nút tải xuống
+          if (!videoInfo.querySelector('.download-btn')) {
+            const downloadBtn = document.createElement('a');
+            downloadBtn.href = `/video/${encodeURIComponent(videoFilename)}`;
+            downloadBtn.className = 'download-btn';
+            downloadBtn.download = videoFilename;
+            downloadBtn.textContent = 'TẢI XUỐNG';
+            videoInfo.appendChild(downloadBtn);
+          }
+        });
+      }, 1000); // Đợi 1 giây sau khi trang đã tải
+    }
+    
+    // Gọi hàm khi trang đã tải xong
+    window.addEventListener('load', addDownloadButtons);
+    
+    // Gọi lại hàm khi có thêm video mới
+    const observer = new MutationObserver(addDownloadButtons);
+    observer.observe(document.getElementById('videos'), { childList: true, subtree: true });
+  </script>
 </body>
 </html>
