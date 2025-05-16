@@ -107,26 +107,15 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Authentication middleware
+// Middleware giả lập xác thực - cho phép tất cả người dùng truy cập
 function authenticateUser(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    // Allow unauthenticated access for GET requests
-    if (req.method === 'GET') {
-      return next();
-    }
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+  // Gán một ID ngẫu nhiên cho mỗi yêu cầu để theo dõi
+  req.userId = 'anonymous-' + Math.random().toString(36).substring(2, 15);
   
-  // Extract user ID from token (simple implementation)
-  const userId = authHeader.split(' ')[1];
-  req.userId = userId;
+  // Gán tên người dùng mặc định
+  req.uploaderName = 'Người dùng ẩn danh';
   
-  // Lưu thông tin tên người dùng từ header nếu có
-  if (req.headers['user-name']) {
-    req.uploaderName = req.headers['user-name'];
-  }
-  
+  // Cho phép tất cả các yêu cầu đi qua
   next();
 }
 
@@ -251,11 +240,7 @@ app.delete('/video/:filename', authenticateUser, (req, res) => {
     return res.status(404).json({ error: 'Video not found' });
   }
   
-  // Check if user owns the video
-  if (videosDb[videoIndex].userId !== req.userId) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-  
+  // Không kiểm tra quyền sở hữu video - bất kỳ ai cũng có thể xóa
   // Remove from database
   const video = videosDb.splice(videoIndex, 1)[0];
   
@@ -268,6 +253,7 @@ app.delete('/video/:filename', authenticateUser, (req, res) => {
     res.json({ success: true });
   });
 });
+
 
 app.listen(port, () => {
   console.log(`Server chạy tại http://localhost:${port}`);
