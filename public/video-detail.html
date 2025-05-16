@@ -1,0 +1,221 @@
+<!-- public/video-detail.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết video</title>
+  <link rel="stylesheet" href="video.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1 id="video-title">Đang tải...</h1>
+      <a href="/">Quay lại trang chính</a>
+    </header>
+    
+    <div id="video-container" class="video-detail-container">
+      <div class="video-wrapper">
+        <video id="video-player" controls></video>
+      </div>
+      <div class="video-info">
+        <p id="upload-date">Ngày tải lên: <span>Đang tải...</span></p>
+        <p id="uploader">Người tải lên: <span>Đang tải...</span></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script>
+    // Hàm thử lại tải video
+    function retryLoadVideo(filename) {
+      console.log('Đang thử lại tải video:', filename);
+      const videoPlayer = document.getElementById('video-player');
+      
+      // Thêm tham số ngẫu nhiên để tránh cache
+      videoPlayer.src = `/video/${filename}?t=${new Date().getTime()}`;
+      
+      // Thay thế thông báo lỗi bằng video player
+      document.getElementById('video-container').innerHTML = `
+        <div class="video-wrapper">
+          <video id="video-player" controls></video>
+        </div>
+        <div class="video-info">
+          <p id="upload-date">Ngày tải lên: <span>${document.getElementById('upload-date').querySelector('span').textContent}</span></p>
+          <p id="uploader">Người tải lên: <span>${document.getElementById('uploader').querySelector('span').textContent}</span></p>
+        </div>
+      `;
+      
+      // Lấy lại video player sau khi thay thế HTML
+      const newVideoPlayer = document.getElementById('video-player');
+      newVideoPlayer.src = `/video/${filename}?t=${new Date().getTime()}`;
+      
+      // Thêm lại xử lý lỗi
+      newVideoPlayer.onerror = function() {
+        console.error('Vẫn không thể tải video sau khi thử lại:', newVideoPlayer.error);
+        document.getElementById('video-container').innerHTML = 
+          `<div class="error-message">
+            <h3>Không thể phát video</h3>
+            <p>Vẫn không thể tải video sau khi thử lại. Mã lỗi: ${newVideoPlayer.error ? newVideoPlayer.error.code : 'không xác định'}</p>
+            <p>Tên file: ${decodeURIComponent(filename)}</p>
+            <p>Vui lòng liên hệ quản trị viên hoặc thử lại sau.</p>
+            <a href="/" class="back-btn">Quay lại trang chủ</a>
+          </div>`;
+      };
+    }
+    
+    // Check if user is logged in
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = firebaseAuth.checkAuthState();
+      if (user) {
+        // Update UI with user info
+        const header = document.querySelector('header');
+        const userProfile = document.createElement('div');
+        userProfile.className = 'user-profile';
+        userProfile.innerHTML = `
+          <img src="${user.photoURL || 'https://via.placeholder.com/40'}" alt="${user.displayName}">
+          <div>
+            <span>${user.displayName}</span>
+            <a href="#" id="sign-out-btn" style="font-size: 0.8rem; padding: 5px 10px;">Đăng xuất</a>
+          </div>
+        `;
+        header.appendChild(userProfile);
+        
+        // Add sign out event listener
+        document.getElementById('sign-out-btn').addEventListener('click', (e) => {
+          e.preventDefault();
+          firebaseAuth.signOut();
+        });
+      }
+      
+      // Get video ID from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const videoId = urlParams.get('id');
+      
+      if (!videoId) {
+        window.location.href = '/';
+        return;
+      }
+      
+      // Load video details - videoId là tên file của video
+      console.log('Đang tải video với ID:', videoId);
+      fetch(`/videos/${videoId}`)
+        .then(res => {
+          if (!res.ok) {
+            // Lấy thông tin lỗi chi tiết từ response
+            return res.json().then(errorData => {
+              console.log('Lỗi từ server:', errorData);
+              throw { message: errorData.error || 'Video không tồn tại', requestedFile: errorData.requestedFile, code: errorData.code };
+            }).catch(e => {
+              // Nếu không thể parse JSON, sử dụng lỗi mặc định
+              console.log('Lỗi khi xử lý phản hồi:', e);
+              throw new Error('Video không tồn tại');
+            });
+          }
+          return res.json();
+        })
+        .then(video => {
+          // Giải mã tiêu đề video để hiển thị đúng các ký tự đặc biệt
+          let videoTitle = video.title || video.originalname;
+          try {
+            // Thử giải mã tiêu đề nếu nó chứa các ký tự bị mã hóa
+            const tempElement = document.createElement('textarea');
+            tempElement.innerHTML = videoTitle;
+            videoTitle = tempElement.value;
+          } catch (e) {
+            console.error('Lỗi khi giải mã tiêu đề video:', e);
+          }
+          
+          // Update page with video details
+          document.title = `${videoTitle} - Chi tiết video`;
+          
+          // Cắt ngắn tiêu đề nếu quá dài
+          const truncateTitle = (title, maxLength = 50) => {
+            return title.length > maxLength ? title.substring(0, maxLength) + '...' : title;
+          };
+          
+          // Hiển thị tiêu đề đã cắt ngắn
+          document.getElementById('video-title').textContent = truncateTitle(videoTitle);
+          // Thêm title attribute để hiển thị đầy đủ khi hover
+          document.getElementById('video-title').setAttribute('title', videoTitle);
+          document.getElementById('upload-date').querySelector('span').textContent = 
+            new Date(video.uploadDate).toLocaleDateString('vi-VN');
+          
+          // Set video source
+          const videoPlayer = document.getElementById('video-player');
+          videoPlayer.src = `/video/${encodeURIComponent(video.filename)}`;
+          console.log('Đường dẫn video:', `/video/${encodeURIComponent(video.filename)}`);
+          console.log('Thông tin video từ server:', video);
+          
+          // Thêm xử lý lỗi khi video không tải được
+          videoPlayer.onerror = function() {
+            console.error('Lỗi khi tải video:', videoPlayer.error);
+            // Hiển thị thông báo lỗi chi tiết hơn
+            document.getElementById('video-container').innerHTML = 
+              `<div class="error-message">
+                <h3>Không thể phát video</h3>
+                <p>Có lỗi khi tải video. Mã lỗi: ${videoPlayer.error ? videoPlayer.error.code : 'không xác định'}</p>
+                <p>Tên file: ${video.filename}</p>
+                <p>Vui lòng thử tải lại trang hoặc liên hệ quản trị viên.</p>
+                <button onclick="retryLoadVideo('${encodeURIComponent(video.filename)}')" class="retry-btn">Thử lại</button>
+                <a href="/" class="back-btn">Quay lại trang chủ</a>
+              </div>`;
+          };
+          
+          // Thêm sự kiện khi video tải thành công
+          videoPlayer.onloadeddata = function() {
+            console.log('Video đã tải thành công');
+          };
+          
+          // Get uploader info if available
+          if (video.userId) {
+            // Hiển thị tên người tải lên nếu có, nếu không thì hiển thị 'Người dùng'
+            document.getElementById('uploader').querySelector('span').textContent = 
+              video.uploaderName || 'Người dùng';
+            
+            // Log thông tin để debug
+            console.log('Thông tin người tải lên:', {
+              userId: video.userId,
+              uploaderName: video.uploaderName
+            });
+          } else {
+            document.getElementById('uploader').querySelector('span').textContent = 'Không xác định';
+          }
+        })
+        .catch(error => {
+          console.error('Lỗi khi tải thông tin video:', error);
+          document.getElementById('video-title').textContent = 'Video không tồn tại';
+          
+          // Xử lý phản hồi lỗi từ server
+          let errorDetails = {};
+          try {
+            // Kiểm tra nếu error có thuộc tính message và response
+            if (error.message) {
+              errorDetails.message = error.message;
+            }
+            // Nếu error có response và data, sử dụng thông tin chi tiết từ server
+            if (error.response && error.response.data) {
+              errorDetails = {...errorDetails, ...error.response.data};
+            }
+          } catch (e) {
+            // Nếu không phân tích được, sử dụng thông báo lỗi mặc định
+            errorDetails = { message: error.message || 'Lỗi không xác định' };
+          }
+          
+          document.getElementById('video-container').innerHTML = 
+            `<div class="error-message">
+              <h3>Không thể tải video</h3>
+              <p>${errorDetails.message || 'Video có thể đã bị xóa hoặc không tồn tại.'}</p>
+              ${errorDetails.requestedFile ? `<p>File yêu cầu: ${errorDetails.requestedFile}</p>` : ''}
+              ${errorDetails.code ? `<p>Mã lỗi: ${errorDetails.code}</p>` : ''}
+              <a href="/" class="back-btn">Quay lại trang chủ</a>
+            </div>`;
+        });
+
+    });
+  </script>
+</body>
+</html>

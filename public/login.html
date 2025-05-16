@@ -1,0 +1,36 @@
+<!-- public/login.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập - Trang Chia Sẻ Video</title>
+  <link rel="stylesheet" href="video.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Đăng nhập</h1>
+    </header>
+    
+    <div class="login-container">
+      <div class="login-card">
+        <h2>Đăng nhập để tiếp tục</h2>
+        <p>Đăng nhập để tải lên và quản lý video của bạn</p>
+        <div id="login-error" class="error-message" style="display: none;"></div>
+        <button id="google-login" class="google-btn">Đăng nhập với Google</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script>
+    document.getElementById('google-login').addEventListener('click', () => {
+      firebaseAuth.signInWithGoogle();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!-- public/upload.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tải Video</title>
+  <link rel="stylesheet" href="video.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Tải video lên</h1>
+      <a href="/">Quay lại trang chính</a>
+    </header>
+    
+    <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data" onsubmit="addUserHeaders(event)">
+      <h3>Chọn video để tải lên</h3>
+      <div class="form-group">
+        <label for="video-title">Tiêu đề video:</label>
+        <input type="text" id="video-title" name="title" required placeholder="Nhập tiêu đề video" />
+      </div>
+      <div class="form-group">
+        <label for="video-file">Chọn file video:</label>
+        <input type="file" id="video-file" name="video" accept="video/*" required />
+      </div>
+      <input type="hidden" id="uploader-name" name="uploaderName" value="" />
+      <button type="submit">Tải lên</button>
+    </form>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script>
+    // Hàm xử lý form submit để thêm thông tin người dùng vào header
+    function addUserHeaders(event) {
+      event.preventDefault();
+      
+      const user = firebaseAuth.getCurrentUser();
+      if (user) {
+        // Đặt tên người dùng vào trường ẩn
+        document.getElementById('uploader-name').value = user.displayName || '';
+        
+        // Tạo form data để gửi
+        const formData = new FormData(document.getElementById('upload-form'));
+        
+        // Gửi request với thông tin người dùng trong header
+        fetch('/upload', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${user.uid}`,
+            'User-Name': user.displayName || ''
+          },
+          body: formData
+        })
+        .then(response => {
+          if (response.ok) {
+            window.location.href = '/';
+          } else {
+            return response.json().then(data => {
+              throw new Error(data.error || 'Lỗi khi tải lên video');
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Lỗi:', error);
+          alert('Lỗi khi tải lên video: ' + error.message);
+        });
+      } else {
+        // Nếu không có thông tin người dùng, submit form bình thường
+        document.getElementById('upload-form').submit();
+      }
+    }
+    
+    // Check if user is logged in
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = firebaseAuth.checkAuthState();
+      
+      // Đặt tên người dùng vào trường ẩn
+      if (user && user.displayName) {
+        document.getElementById('uploader-name').value = user.displayName;
+      }
+      if (user) {
+        // Update UI with user info
+        const header = document.querySelector('header');
+        const userProfile = document.createElement('div');
+        userProfile.className = 'user-profile';
+        userProfile.innerHTML = `
+          <img src="${user.photoURL || 'https://via.placeholder.com/40'}" alt="${user.displayName}">
+          <div>
+            <span>${user.displayName}</span>
+            <a href="#" id="sign-out-btn" style="font-size: 0.8rem; padding: 5px 10px;">Đăng xuất</a>
+          </div>
+        `;
+        header.appendChild(userProfile);
+        
+        // Add sign out event listener
+        document.getElementById('sign-out-btn').addEventListener('click', (e) => {
+          e.preventDefault();
+          firebaseAuth.signOut();
+        });
+
+        // Add authorization header to form submission
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+          // We'll handle the form submission manually to add the authorization header
+          e.preventDefault();
+          
+          const formData = new FormData(this);
+          
+          fetch('/upload', {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'Authorization': `Bearer ${user.uid}`
+            }
+          })
+          .then(response => {
+            if (response.ok) {
+              window.location.href = '/';
+            } else {
+              throw new Error('Tải lên thất bại');
+            }
+          })
+          .catch(error => {
+            console.error('Lỗi khi tải lên video:', error);
+            alert('Không thể tải lên video. Vui lòng thử lại sau.');
+          });
+        });
+      }
+    });
+  </script>
+</body>
+</html>
